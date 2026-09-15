@@ -79,6 +79,17 @@ class MainActivity : FlutterActivity() {
                         stopService(Intent(this, PeriodicQuizService::class.java))
                         result.success(true)
                     }
+                    "restartPeriodic" -> {
+                        val intent = Intent(this, PeriodicQuizService::class.java).apply {
+                            putExtra("from_restart", true)
+                        }
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intent)
+                        } else {
+                            startService(intent)
+                        }
+                        result.success(true)
+                    }
                     "cancelOverlay" -> {
                         stopService(Intent(this, QuizSchedulerService::class.java))
                         result.success(true)

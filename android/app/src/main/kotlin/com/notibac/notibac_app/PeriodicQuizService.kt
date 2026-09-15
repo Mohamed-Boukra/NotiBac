@@ -6,10 +6,13 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -17,15 +20,15 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import org.json.JSONArray
+import java.util.Calendar
 
 /**
- * Persistent foreground service that shows a quiz popup every INTERVAL_MS.
- * Structured identically to QuizSchedulerService (which is confirmed working).
+ * Persistent foreground service that shows a quiz popup every interval.
+ * Respects Do Not Disturb, Vibration, and Sound preferences.
  */
 class PeriodicQuizService : Service() {
 
     companion object {
-        const val INTERVAL_MS    = 2 * 60 * 1000L   // 2 min for testing
         const val PREF_ENABLED   = "flutter.periodic_enabled"
         private const val PREFS_FILE = "FlutterSharedPreferences"
         private const val CH_ID      = "notibac_periodic"
@@ -61,12 +64,15 @@ class PeriodicQuizService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val prefs = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        val intervalMins = prefs.getLong("flutter.periodic_interval", 20L)
+
         // Show persistent notification immediately — keeps Android from killing us
         startForeground(
             NOTIF_ID,
             NotificationCompat.Builder(this, CH_ID)
                 .setContentTitle("NotiBac نشط")
-                .setContentText("✅ ستظهر نافذة اختبار كل 2 دقائق (تجريبي)")
+                .setContentText("✅ ستظهر نافذة اختبار كل $intervalMins دقيقة")
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setOngoing(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -75,9 +81,18 @@ class PeriodicQuizService : Service() {
 
         // Cancel any pending loops to avoid duplicates, then start fresh
         handler.removeCallbacks(loop)
-        // Fire first popup immediately so user can confirm service works,
-        // then every INTERVAL_MS after that
-        handler.post(loop)
+        
+        // Check if we should fire immediately (only on explicit start, not on tick)
+        // If started explicitly by user, we show the first one now
+        val fromRestart = intent?.getBooleanExtra("from_restart", false) ?: false
+        if (fromRestart) {
+            // When user changes interval in settings, we restart service and wait 
+            // for the interval instead of spamming them immediately.
+            handler.postDelayed(loop, intervalMins * 60 * 1000L)
+        } else {
+            // Initial toggle ON -> fire immediately
+            handler.post(loop)
+        }
 
         return START_STICKY
     }
@@ -93,16 +108,36 @@ class PeriodicQuizService : Service() {
     // ── Repeating tick ───────────────────────────────────────────────────────
 
     private fun tick() {
+        val prefs = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        val intervalMs = prefs.getLong("flutter.periodic_interval", 20L) * 60 * 1000L
+        
         // Re-schedule FIRST so even if display fails, next tick is queued
-        handler.postDelayed(loop, INTERVAL_MS)
-        showQuiz()
+        handler.postDelayed(loop, intervalMs)
+        
+        // Check Do Not Disturb
+        val dndEnabled = prefs.getBoolean("flutter.dnd_enabled", false)
+        if (dndEnabled) {
+            // Flutter stores integers as Long in SharedPreferences
+            val dndStart = prefs.getLong("flutter.dnd_start", 23L).toInt()
+            val dndEnd = prefs.getLong("flutter.dnd_end", 7L).toInt()
+            
+            val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            val inDnd = if (dndStart < dndEnd) {
+                hour in dndStart until dndEnd
+            } else {
+                hour >= dndStart || hour < dndEnd
+            }
+            
+            if (inDnd) return // Skip showing the popup
+        }
+
+        showQuiz(prefs)
     }
 
     // ── Event picking ────────────────────────────────────────────────────────
 
-    private fun pickEvent(): Pair<String, String> {
+    private fun pickEvent(prefs: android.content.SharedPreferences): Pair<String, String> {
         return try {
-            val prefs      = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
             val listsJson  = prefs.getString("flutter.event_lists", "[]") ?: "[]"
             val eventsJson = prefs.getString("flutter.events",      "[]") ?: "[]"
 
@@ -142,10 +177,10 @@ class PeriodicQuizService : Service() {
         }
     }
 
-    // ── Overlay display (identical pattern to QuizSchedulerService) ──────────
+    // ── Overlay display ──────────────────────────────────────────────────────
 
-    private fun showQuiz() {
-        val (date, title) = pickEvent()
+    private fun showQuiz(prefs: android.content.SharedPreferences) {
+        val (date, title) = pickEvent(prefs)
         dismiss()
         val params = makeParams()
         val card = dateCard(date, title, params)
@@ -186,7 +221,7 @@ class PeriodicQuizService : Service() {
             hint("اضغط للإغلاق  ✕", Color.parseColor("#C62828"))
         }
 
-    // ── DSL helpers (identical to QuizSchedulerService) ──────────────────────
+    // ── DSL helpers ──────────────────────────────────────────────────────────
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
@@ -222,7 +257,7 @@ class PeriodicQuizService : Service() {
             this.text = text; textSize = 12f; setTextColor(color); gravity = Gravity.CENTER
         })
 
-    // ── WindowManager helpers ─────────────────────────────────────────────────
+    // ── WindowManager helpers ────────────────────────────────────────────────
 
     private fun attach(v: View, p: WindowManager.LayoutParams) {
         currentView = v

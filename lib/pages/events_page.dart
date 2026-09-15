@@ -30,10 +30,7 @@ class _EventsPageState extends State<EventsPage> {
   }
 
   Future<void> _loadEvents() async {
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     try {
       final events = await DatabaseService.getEventsByListId(widget.listId);
       setState(() {
@@ -77,8 +74,8 @@ class _EventsPageState extends State<EventsPage> {
         return Directionality(
           textDirection: TextDirection.rtl,
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('إضافة حدث جديد', style: TextStyle(fontWeight: FontWeight.bold)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('إضافة حدث جديد', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -86,30 +83,33 @@ class _EventsPageState extends State<EventsPage> {
                   TextField(
                     controller: titleController,
                     textAlign: TextAlign.right,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'عنوان الحدث *',
                       hintText: 'مثال: اندلاع الثورة التحريرية',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: dateController,
                     textAlign: TextAlign.right,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'التاريخ (DD-MM-YYYY) *',
                       hintText: 'مثال: 01-11-1954',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   TextField(
                     controller: descriptionController,
                     textAlign: TextAlign.right,
                     maxLines: 3,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'التفاصيل / الوصف (اختياري)',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
                     ),
                   ),
                 ],
@@ -118,29 +118,24 @@ class _EventsPageState extends State<EventsPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('إلغاء'),
+                child: const Text('إلغاء', style: TextStyle(color: Colors.blueGrey)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
-                  final title = titleController.text.trim();
-                  final date = dateController.text.trim();
-
-                  if (title.isNotEmpty && date.isNotEmpty) {
+                  if (titleController.text.trim().isNotEmpty && dateController.text.trim().isNotEmpty) {
                     Navigator.of(dialogContext).pop(true);
                   } else {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
-                      const SnackBar(
-                        content: Text('يرجى كتابة عنوان الحدث والتاريخ', textAlign: TextAlign.right),
-                        backgroundColor: Colors.red,
-                      ),
+                      const SnackBar(content: Text('يرجى كتابة عنوان الحدث والتاريخ', textAlign: TextAlign.right), backgroundColor: Colors.redAccent),
                     );
                   }
                 },
-                child: const Text('إضافة'),
+                child: const Text('إضافة', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -160,10 +155,7 @@ class _EventsPageState extends State<EventsPage> {
       await _loadEvents();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تمت إضافة الحدث بنجاح', textAlign: TextAlign.right),
-            backgroundColor: Colors.green,
-          ),
+          const SnackBar(content: Text('تمت إضافة الحدث بنجاح', textAlign: TextAlign.right), backgroundColor: Colors.teal),
         );
       }
     }
@@ -176,21 +168,22 @@ class _EventsPageState extends State<EventsPage> {
       builder: (context) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('حذف الحدث'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('حذف الحدث', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
           content: Text('هل أنت متأكد من حذف الحدث "${event.title}"؟'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('إلغاء'),
+              child: const Text('إلغاء', style: TextStyle(color: Colors.blueGrey)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('حذف'),
+              child: const Text('حذف', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -202,10 +195,7 @@ class _EventsPageState extends State<EventsPage> {
       await _loadEvents();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('تم حذف الحدث: ${event.title}', textAlign: TextAlign.right),
-            backgroundColor: Colors.green,
-          ),
+          SnackBar(content: Text('تم حذف الحدث: ${event.title}', textAlign: TextAlign.right), backgroundColor: Colors.teal),
         );
       }
     }
@@ -219,255 +209,169 @@ class _EventsPageState extends State<EventsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenHeight = mediaQuery.size.height;
-    final screenWidth = mediaQuery.size.width;
-
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Column(
-            children: [
-              // Header
-              Container(
-                height: screenHeight * 0.08,
-                width: double.infinity,
-                color: Colors.orange,
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Text(
-                        widget.listTitle,
-                        style: TextStyle(
-                          fontSize: screenHeight * 0.024,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+      backgroundColor: const Color(0xFFF4F6F9),
+      appBar: AppBar(
+        title: Text(widget.listTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Search Input Field
+                Container(
+                  height: 52,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.indigo.withValues(alpha: 0.1)),
+                    boxShadow: [
+                      BoxShadow(color: Colors.indigo.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: TextField(
+                    controller: _searchController,
+                    textAlign: TextAlign.right,
+                    onChanged: _filterEvents,
+                    decoration: InputDecoration(
+                      icon: const Icon(Icons.search_rounded, color: Colors.indigo),
+                      hintText: 'ابحث عن حدث أو تاريخ...',
+                      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      border: InputBorder.none,
                     ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_forward_rounded,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                        onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+
+                // Add Event Button Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'الأحداث (${_filteredEvents.length})',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo),
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        elevation: 3,
+                        shadowColor: Colors.indigo.withValues(alpha: 0.3),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
+                      onPressed: _addEventDialog,
+                      icon: const Icon(Icons.add_rounded, size: 20),
+                      label: const Text('إضافة حدث', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                     ),
                   ],
                 ),
-              ),
 
-              // Main Body
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.04),
-                  child: Column(
-                    children: [
-                      // Search Input Field
-                      Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withValues(alpha: 0.06),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: TextField(
-                          controller: _searchController,
-                          textAlign: TextAlign.right,
-                          onChanged: _filterEvents,
-                          decoration: InputDecoration(
-                            icon: const Icon(Icons.search_rounded, color: Colors.orange),
-                            hintText: 'ابحث عن حدث أو تاريخ...',
-                            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                      ),
+                const SizedBox(height: 16),
 
-                      SizedBox(height: screenHeight * 0.018),
-
-                      // Add Event Button Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'الأحداث والتسلسل الزمني (${_filteredEvents.length})',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[750],
-                            ),
-                          ),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            ),
-                            onPressed: _addEventDialog,
-                            icon: const Icon(Icons.add_rounded, size: 20),
-                            label: const Text(
-                              'إضافة حدث',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      SizedBox(height: screenHeight * 0.018),
-
-                      // Events List Area
-                      Expanded(
-                        child: _isLoading
-                            ? const Center(child: CircularProgressIndicator(color: Colors.orange))
-                            : _errorMessage != null
-                                ? Center(
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: const TextStyle(color: Colors.red),
-                                    ),
-                                  )
-                                : _filteredEvents.isEmpty
-                                    ? Center(
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.event_note_rounded,
-                                              size: 64,
-                                              color: Colors.grey[400],
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Text(
-                                              _searchController.text.isNotEmpty
-                                                  ? 'لا توجد أحداث تطابق بحثك'
-                                                  : 'لا توجد أحداث في هذه القائمة',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.grey[600],
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    : ListView.builder(
-                                        itemCount: _filteredEvents.length,
-                                        itemBuilder: (context, index) {
-                                          final event = _filteredEvents[index];
-                                          return _buildEventCard(event, screenHeight, screenWidth);
-                                        },
+                // Events List Area
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator(color: Colors.indigo))
+                      : _errorMessage != null
+                          ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent)))
+                          : _filteredEvents.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.event_note_rounded, size: 64, color: Colors.blueGrey.withValues(alpha: 0.3)),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        _searchController.text.isNotEmpty ? 'لا توجد أحداث تطابق بحثك' : 'لا توجد أحداث في هذه القائمة',
+                                        style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade400, fontWeight: FontWeight.w600),
                                       ),
-                      ),
-                    ],
-                  ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.builder(
+                                  itemCount: _filteredEvents.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildEventCard(_filteredEvents[index]);
+                                  },
+                                ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildEventCard(Event event, double screenHeight, double screenWidth) {
+  Widget _buildEventCard(Event event) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey[200]!),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.08),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.indigo.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
                   event.title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
                 ),
               ),
               if (event.isCustom)
                 IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
                   onPressed: () => _deleteEvent(event),
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 ),
             ],
           ),
-          const SizedBox(height: 8),
-
-          // Date pill badge
+          const SizedBox(height: 12),
+          
+          // Date badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.amber.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.calendar_today_rounded, size: 14, color: Colors.orange),
-                const SizedBox(width: 6),
+                const Icon(Icons.calendar_today_rounded, size: 14, color: Colors.amber),
+                const SizedBox(width: 8),
                 Text(
                   event.date,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber.shade800),
                 ),
               ],
             ),
           ),
-
+          
           if (event.description.isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Text(
               event.description,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-                height: 1.4,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.blueGrey.shade600, height: 1.5),
             ),
           ],
         ],

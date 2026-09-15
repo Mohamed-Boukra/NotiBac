@@ -23,10 +23,7 @@ class _ListsPageState extends State<ListsPage> {
   }
 
   Future<void> _loadLists() async {
-    setState(() {
-      _isLoading = true;
-    });
-
+    setState(() => _isLoading = true);
     try {
       final lists = await DatabaseService.getAllLists();
       setState(() {
@@ -51,7 +48,7 @@ class _ListsPageState extends State<ListsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('يمكنك إضافة قائمة مخصصة واحدة فقط في الوقت الحالي', textAlign: TextAlign.right),
-          backgroundColor: Colors.orange,
+          backgroundColor: Colors.amber,
         ),
       );
       return;
@@ -64,26 +61,19 @@ class _ListsPageState extends State<ListsPage> {
         isEnabled: true,
         isPredefined: false,
       );
-
       await DatabaseService.insertList(newList);
       _listNameController.clear();
       await _loadLists();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('تم إنشاء القائمة: $trimmed', textAlign: TextAlign.right),
-            backgroundColor: Colors.green,
-          ),
+          SnackBar(content: Text('تم إنشاء القائمة: $trimmed', textAlign: TextAlign.right), backgroundColor: Colors.teal),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('خطأ في إنشاء القائمة: $e', textAlign: TextAlign.right),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('خطأ في إنشاء القائمة: $e', textAlign: TextAlign.right), backgroundColor: Colors.redAccent),
         );
       }
     }
@@ -95,21 +85,22 @@ class _ListsPageState extends State<ListsPage> {
       builder: (context) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('تأكيد الحذف'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('تأكيد الحذف', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
           content: Text('هل أنت متأكد من حذف القائمة "${list.name}"؟\nسيتم حذف جميع الأحداث التابعة لها.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('إلغاء'),
+              child: const Text('إلغاء', style: TextStyle(color: Colors.blueGrey)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('حذف'),
+              child: const Text('حذف', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -122,10 +113,7 @@ class _ListsPageState extends State<ListsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('تم حذف القائمة: ${list.name}', textAlign: TextAlign.right),
-            backgroundColor: Colors.green,
-          ),
+          SnackBar(content: Text('تم حذف القائمة: ${list.name}', textAlign: TextAlign.right), backgroundColor: Colors.teal),
         );
       }
     }
@@ -145,197 +133,123 @@ class _ListsPageState extends State<ListsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenHeight = mediaQuery.size.height;
-    final screenWidth = mediaQuery.size.width;
     final hasCustomList = _allLists.any((l) => !l.isPredefined);
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
-        child: Directionality(
-          textDirection: TextDirection.rtl,
+      backgroundColor: const Color(0xFFF4F6F9),
+      appBar: AppBar(
+        title: const Text('الأحداث والتواريخ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22)),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
           child: Column(
             children: [
-              // Header
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: Colors.indigo))
+                    : _errorMessage != null
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 48),
+                                  const SizedBox(height: 16),
+                                  Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 16), textAlign: TextAlign.center),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
+                                    onPressed: _loadLists,
+                                    child: const Text('إعادة المحاولة', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(20),
+                            itemCount: _allLists.length + 1,
+                            itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(bottom: 16),
+                                  child: Text('قوائمي', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo)),
+                                );
+                              }
+                              return _buildListItem(_allLists[index - 1]);
+                            },
+                          ),
+              ),
+              
+              // ── Create New List Footer ──
               Container(
-                height: screenHeight * 0.08,
-                width: double.infinity,
-                color: Colors.orange,
-                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
-                child: Stack(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(color: Colors.indigo.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4)),
+                  ],
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Center(
-                      child: Text(
-                        'إدارة الأحداث والتواريخ',
-                        style: TextStyle(
-                          fontSize: screenHeight * 0.026,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+                    const Text('إنشاء قائمة جديدة', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo)),
+                    const SizedBox(height: 8),
+                    Text(
+                      hasCustomList
+                          ? 'تم إضافة القائمة المخصصة بالفعل. احذفها لإنشاء واحدة جديدة.'
+                          : 'أنشئ قائمة مخصصة لإضافة تواريخك الخاصة.',
+                      style: TextStyle(fontSize: 13, color: hasCustomList ? Colors.grey[500] : Colors.blueGrey),
                     ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.arrow_forward_rounded,
-                          color: Colors.white,
-                          size: 28,
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 52,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: hasCustomList ? Colors.grey[100] : const Color(0xFFF4F6F9),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.indigo.withValues(alpha: 0.1)),
+                            ),
+                            child: TextField(
+                              controller: _listNameController,
+                              enabled: !hasCustomList,
+                              textAlign: TextAlign.right,
+                              decoration: InputDecoration(
+                                hintText: hasCustomList ? 'تمت إضافة القائمة' : 'اسم القائمة...',
+                                hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
                         ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          height: 52,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: hasCustomList ? Colors.grey[300] : Colors.indigo,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              elevation: hasCustomList ? 0 : 3,
+                            ),
+                            onPressed: hasCustomList ? null : () => _createNewList(_listNameController.text),
+                            child: const Text('حفظ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ),
-
-              // Main Body
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(screenWidth * 0.04),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'قوائمي',
-                        style: TextStyle(
-                          fontSize: screenHeight * 0.024,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                      SizedBox(height: screenHeight * 0.015),
-
-                      if (_isLoading)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(32.0),
-                            child: CircularProgressIndicator(color: Colors.orange),
-                          ),
-                        )
-                      else if (_errorMessage != null)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.red[50],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.red[200]!),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                _errorMessage!,
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                              const SizedBox(height: 8),
-                              ElevatedButton(
-                                onPressed: _loadLists,
-                                child: const Text('إعادة المحاولة'),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        ..._allLists.map((list) => _buildListItem(list, screenHeight, screenWidth)),
-
-                      SizedBox(height: screenHeight * 0.03),
-
-                      // Create New List Form Card
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(screenWidth * 0.04),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey[300]!),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withValues(alpha: 0.08),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'إنشاء قائمة جديدة',
-                              style: TextStyle(
-                                fontSize: screenHeight * 0.022,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.01),
-                            Text(
-                              hasCustomList
-                                  ? 'تم إيجاد قائمة مخصصة بالفعل. يمكنك حذفها لإضافة قائمة جديدة.'
-                                  : 'يمكنك إنشاء قائمة مخصصة لإضافة تواريخ جديدة.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: hasCustomList ? Colors.grey[500] : Colors.grey[600],
-                              ),
-                            ),
-                            SizedBox(height: screenHeight * 0.02),
-
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    height: 48,
-                                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                                    decoration: BoxDecoration(
-                                      color: hasCustomList ? Colors.grey[100] : Colors.grey[50],
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: Colors.grey[300]!),
-                                    ),
-                                    child: TextField(
-                                      controller: _listNameController,
-                                      enabled: !hasCustomList,
-                                      textAlign: TextAlign.right,
-                                      decoration: InputDecoration(
-                                        hintText: hasCustomList ? 'تمت إضافة القائمة المخصصة' : 'اسم القائمة...',
-                                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
-                                        border: InputBorder.none,
-                                        contentPadding: EdgeInsets.zero,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                SizedBox(
-                                  height: 48,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: hasCustomList ? Colors.grey[300] : Colors.orange,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: hasCustomList
-                                        ? null
-                                        : () {
-                                            _createNewList(_listNameController.text);
-                                          },
-                                    child: const Text(
-                                      'حفظ',
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
@@ -345,108 +259,94 @@ class _ListsPageState extends State<ListsPage> {
     );
   }
 
-  Widget _buildListItem(EventList list, double screenHeight, double screenWidth) {
-    return GestureDetector(
-      onTap: () {
-        if (list.id != null) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EventsPage(
-                listTitle: list.name,
-                listId: list.id!,
-              ),
-            ),
-          );
-        }
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: screenHeight * 0.014),
-        padding: EdgeInsets.all(screenWidth * 0.038),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey[200]!),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.08),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Checkbox for active status
-            GestureDetector(
-              onTap: () => _toggleListEnabled(list),
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: list.isEnabled ? Colors.orange : Colors.transparent,
-                  border: Border.all(
-                    color: list.isEnabled ? Colors.orange : Colors.grey[400]!,
-                    width: 2,
-                  ),
-                  borderRadius: BorderRadius.circular(6),
+  Widget _buildListItem(EventList list) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.indigo.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            if (list.id != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventsPage(listTitle: list.name, listId: list.id!),
                 ),
-                child: list.isEnabled
-                    ? const Icon(Icons.check, color: Colors.white, size: 16)
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 14),
-
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    list.name,
-                    style: TextStyle(
-                      fontSize: screenHeight * 0.02,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[850],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  FutureBuilder<int>(
-                    future: DatabaseService.getEventCount(list.id!),
-                    builder: (context, snapshot) {
-                      final count = snapshot.data ?? 0;
-                      return Text(
-                        '$count أحداث',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            // Actions
-            Row(
-              mainAxisSize: MainAxisSize.min,
+              );
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
+                // Custom checkbox
+                GestureDetector(
+                  onTap: () => _toggleListEnabled(list),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: list.isEnabled ? Colors.teal : Colors.transparent,
+                      border: Border.all(
+                        color: list.isEnabled ? Colors.teal : Colors.grey[300]!,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: list.isEnabled
+                        ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                        : null,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        list.name,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
+                      ),
+                      const SizedBox(height: 4),
+                      FutureBuilder<int>(
+                        future: DatabaseService.getEventCount(list.id!),
+                        builder: (context, snapshot) {
+                          final count = snapshot.data ?? 0;
+                          return Text(
+                            '$count أحداث',
+                            style: TextStyle(fontSize: 13, color: Colors.blueGrey.withValues(alpha: 0.7)),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Actions
                 if (!list.isPredefined)
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 22),
+                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 24),
                     onPressed: () => _deleteCustomList(list),
-                    tooltip: 'حذف القائمة',
                   ),
-                const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.grey,
-                  size: 16,
-                ),
+                const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.blueGrey, size: 16),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
