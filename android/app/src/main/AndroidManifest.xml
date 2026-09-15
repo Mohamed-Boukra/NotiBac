@@ -31,12 +31,21 @@
         </activity>
 
         <!--
-            QuizSchedulerService: native Kotlin foreground service that shows
-            a floating quiz window using WindowManager after a timed delay.
-            Works even when the Flutter app is fully closed.
+            QuizSchedulerService: shows a floating quiz window after a timed
+            delay (used by the 30-second test button). Works even when closed.
         -->
         <service
             android:name=".QuizSchedulerService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"/>
+
+        <!--
+            PeriodicQuizService: persistent foreground service that shows a
+            quiz popup automatically every 2 minutes (testing) / 20 min (prod).
+        -->
+        <service
+            android:name=".PeriodicQuizService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync"/>

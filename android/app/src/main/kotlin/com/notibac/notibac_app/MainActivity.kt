@@ -47,7 +47,6 @@ class MainActivity : FlutterActivity() {
                         val title = call.argument<String>("title") ?: ""
 
                         if (!Settings.canDrawOverlays(this)) {
-                            // Ask for permission first, then schedule
                             pendingResult = result
                             pendingDelay = delaySeconds
                             pendingDate = date
@@ -61,6 +60,24 @@ class MainActivity : FlutterActivity() {
                             startQuizService(delaySeconds, date, title)
                             result.success(true)
                         }
+                    }
+                    "startPeriodic" -> {
+                        // Save enabled flag so START_STICKY restart honours it
+                        getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
+                            .edit().putBoolean(PeriodicQuizService.PREF_ENABLED, true).apply()
+                        val intent = Intent(this, PeriodicQuizService::class.java)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intent)
+                        } else {
+                            startService(intent)
+                        }
+                        result.success(true)
+                    }
+                    "stopPeriodic" -> {
+                        getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
+                            .edit().putBoolean(PeriodicQuizService.PREF_ENABLED, false).apply()
+                        stopService(Intent(this, PeriodicQuizService::class.java))
+                        result.success(true)
                     }
                     "cancelOverlay" -> {
                         stopService(Intent(this, QuizSchedulerService::class.java))
