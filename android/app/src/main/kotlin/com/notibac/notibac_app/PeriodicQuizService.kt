@@ -198,14 +198,15 @@ class PeriodicQuizService : Service() {
             type,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
-        ).apply { gravity = Gravity.CENTER }
+        ).apply { 
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            y = resources.displayMetrics.heightPixels / 4
+        }
     }
 
     private fun dateCard(date: String, title: String, params: WindowManager.LayoutParams): LinearLayout =
-        card(Color.WHITE, Color.parseColor("#FF9800")) {
-            label("📅  NotiBac Quiz", Color.parseColor("#FF9800"))
-            big(date, Color.parseColor("#E65100"))
-            hint("اضغط لمعرفة الحدث", Color.GRAY)
+        card(Color.WHITE, Color.parseColor("#E8EAF6")) {
+            big(date, Color.parseColor("#1A237E"))
             setOnClickListener {
                 dismiss()
                 val ev = eventCard(title)
@@ -215,10 +216,8 @@ class PeriodicQuizService : Service() {
         }
 
     private fun eventCard(title: String): LinearLayout =
-        card(Color.parseColor("#FFF8E1"), Color.parseColor("#4CAF50")) {
-            label("✅  الحدث التاريخي", Color.parseColor("#2E7D32"))
-            big(title, Color.parseColor("#1B5E20"))
-            hint("اضغط للإغلاق  ✕", Color.parseColor("#C62828"))
+        card(Color.WHITE, Color.parseColor("#E0F2F1")) {
+            big(title, Color.parseColor("#004D40"))
         }
 
     // ── DSL helpers ──────────────────────────────────────────────────────────

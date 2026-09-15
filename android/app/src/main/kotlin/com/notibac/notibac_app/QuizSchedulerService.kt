@@ -115,23 +115,22 @@ class QuizSchedulerService : Service() {
             type,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
-        ).apply { gravity = Gravity.CENTER }
+        ).apply { 
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            y = resources.displayMetrics.heightPixels / 4
+        }
     }
 
     private fun dateCard(): LinearLayout = card(
-        Color.WHITE, Color.parseColor("#FF9800")
+        Color.WHITE, Color.parseColor("#E8EAF6")
     ) {
-        label("📅  NotiBac Quiz", Color.parseColor("#FF9800"))
-        big(quizDate, Color.parseColor("#E65100"))
-        hint("اضغط لمعرفة الحدث", Color.GRAY)
+        big(quizDate, Color.parseColor("#1A237E"))
     }
 
     private fun eventCard(): LinearLayout = card(
-        Color.parseColor("#FFF8E1"), Color.parseColor("#4CAF50")
+        Color.WHITE, Color.parseColor("#E0F2F1")
     ) {
-        label("✅  الحدث التاريخي", Color.parseColor("#2E7D32"))
-        big(quizTitle, Color.parseColor("#1B5E20"))
-        hint("اضغط للإغلاق  ✕", Color.parseColor("#C62828"))
+        big(quizTitle, Color.parseColor("#004D40"))
     }
 
     // ── DSL-style helpers ─────────────────────────────────────────────────────
