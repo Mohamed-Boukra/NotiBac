@@ -220,8 +220,8 @@ class PeriodicQuizService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply { 
-            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
-            y = resources.displayMetrics.heightPixels / 4
+            gravity = Gravity.CENTER_VERTICAL or Gravity.END
+            x = dp(16)
         }
     }
 
@@ -232,11 +232,11 @@ class PeriodicQuizService : Service() {
     private fun card(fill: Int, stroke: Int, build: LinearLayout.() -> Unit): LinearLayout =
         LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(28), dp(20), dp(28), dp(20))
+            setPadding(dp(24), dp(14), dp(24), dp(14))
             elevation = dp(8).toFloat()
             background = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                cornerRadius = dp(18).toFloat()
+                cornerRadius = dp(50).toFloat()
                 setColor(fill)
                 setStroke(dp(2), stroke)
             }
@@ -251,9 +251,8 @@ class PeriodicQuizService : Service() {
 
     private fun LinearLayout.big(text: String, color: Int) =
         addView(TextView(context).apply {
-            this.text = text; textSize = 28f; setTextColor(color)
+            this.text = text; textSize = 18f; setTextColor(color)
             setTypeface(typeface, Typeface.BOLD); gravity = Gravity.CENTER
-            setPadding(0, dp(10), 0, dp(8))
         })
 
     private fun LinearLayout.hint(text: String, color: Int) =
