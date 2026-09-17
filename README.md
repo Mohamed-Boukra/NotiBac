@@ -87,7 +87,7 @@ To test the actual popups, you must run the app on a **Physical Android Device**
 Contributions are welcome! If you'd like to improve the UI, add more default lists, or optimize the Kotlin background services, feel free to open a Pull Request.
 
 ## 📄 License
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## 📧 Contact & Credits
 **Developed by Mohamed Boukra**
