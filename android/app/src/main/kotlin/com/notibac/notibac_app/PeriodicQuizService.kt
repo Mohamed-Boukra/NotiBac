@@ -220,8 +220,9 @@ class PeriodicQuizService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply { 
-            gravity = Gravity.CENTER_VERTICAL or Gravity.END
+            gravity = Gravity.TOP or Gravity.END
             x = dp(16)
+            y = resources.displayMetrics.heightPixels / 6
         }
     }
 
