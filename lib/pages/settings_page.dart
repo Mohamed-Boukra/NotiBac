@@ -18,6 +18,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   bool _periodicEnabled = false;
   int _periodicInterval = 20; // in minutes
+  String _popupPosition = 'right';
 
   bool _dndEnabled = false;
   TimeOfDay _dndStart = const TimeOfDay(hour: 23, minute: 0); // 11 PM
@@ -39,6 +40,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _periodicEnabled = prefs.getBool('periodic_enabled') ?? false;
       _periodicInterval = prefs.getInt('periodic_interval') ?? 20;
+      _popupPosition = prefs.getString('popup_position') ?? 'right';
       _dndEnabled = prefs.getBool('dnd_enabled') ?? false;
       
       final dStart = prefs.getInt('dnd_start') ?? 23;
@@ -52,6 +54,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final prefs = await SharedPreferences.getInstance();
     if (value is bool) await prefs.setBool(key, value);
     if (value is int) await prefs.setInt(key, value);
+    if (value is String) await prefs.setString(key, value);
     
     if (_periodicEnabled && key != 'periodic_enabled') {
       await _ch.invokeMethod('restartPeriodic');
@@ -246,6 +249,29 @@ class _SettingsPageState extends State<SettingsPage> {
 
             const SizedBox(height: 24),
 
+            // ── Popup Position ──
+            _buildSectionTitle('موضع النافذة', Icons.align_horizontal_center_rounded),
+            _buildSectionCard(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildPositionOption('يمين', 'right', Icons.align_horizontal_right_rounded),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildPositionOption('الوسط', 'center', Icons.align_horizontal_center_rounded),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildPositionOption('يسار', 'left', Icons.align_horizontal_left_rounded),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
             // ── Do Not Disturb ──
             _buildSectionTitle('وقت النوم', Icons.bedtime_rounded),
             _buildSectionCard(
@@ -390,6 +416,39 @@ class _SettingsPageState extends State<SettingsPage> {
             Text(
               time.format(context),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.indigo),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPositionOption(String title, String value, IconData icon) {
+    final isSelected = _popupPosition == value;
+    return InkWell(
+      onTap: () {
+        setState(() => _popupPosition = value);
+        _saveSetting('popup_position', value);
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.indigo : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? Colors.indigo : Colors.grey.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: isSelected ? Colors.white : Colors.blueGrey, size: 24),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.blueGrey,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 13,
+              ),
             ),
           ],
         ),

@@ -182,7 +182,7 @@ class PeriodicQuizService : Service() {
     private fun showQuiz(prefs: android.content.SharedPreferences) {
         val (date, title) = pickEvent(prefs)
         dismiss()
-        val params = makeParams()
+        val params = makeParams(prefs)
 
         val showDateFirst = Math.random() < 0.5
         val firstText = if (showDateFirst) date else title
@@ -208,10 +208,12 @@ class PeriodicQuizService : Service() {
         attach(frontCard, params)
     }
 
-    private fun makeParams(): WindowManager.LayoutParams {
+    private fun makeParams(prefs: android.content.SharedPreferences): WindowManager.LayoutParams {
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
+
+        val position = prefs.getString("flutter.popup_position", "right")
 
         return WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -220,9 +222,21 @@ class PeriodicQuizService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply { 
-            gravity = Gravity.TOP or Gravity.END
-            x = dp(16)
             y = resources.displayMetrics.heightPixels / 6
+            when (position) {
+                "left" -> {
+                    gravity = Gravity.TOP or Gravity.START
+                    x = dp(16)
+                }
+                "center" -> {
+                    gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+                    x = 0
+                }
+                else -> {
+                    gravity = Gravity.TOP or Gravity.END
+                    x = dp(16)
+                }
+            }
         }
     }
 
