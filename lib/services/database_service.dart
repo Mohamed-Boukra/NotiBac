@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/event.dart';
 import '../models/event_list.dart';
 
 class DatabaseService {
-  static const String _listsKey = 'event_lists';
-  static const String _eventsKey = 'events';
+  static const String _listsKey = 'event_lists_v2';
+  static const String _eventsKey = 'events_v2';
   static const String _nextIdKey = 'next_id';
 
   static int _nextId = 1;
@@ -30,131 +31,50 @@ class DatabaseService {
       return;
     }
 
-    final defaultLists = [
-      EventList(
-        id: 1,
-        name: 'تواريخ الفصل الأول',
-        description: 'أحداث الحرب العالمية الأولى والثانية',
-        isEnabled: true,
-        isPredefined: true,
-      ),
-      EventList(
-        id: 2,
-        name: 'تواريخ الفصل الثاني',
-        description: 'أحداث ما بين الحربين والحرب العالمية الثانية',
-        isEnabled: false,
-        isPredefined: true,
-      ),
-      EventList(
-        id: 3,
-        name: 'تواريخ الفصل الثالث',
-        description: 'أحداث الحرب الباردة وما بعدها',
-        isEnabled: false,
-        isPredefined: true,
-      ),
-    ];
+    try {
+      final jsonString = await rootBundle.loadString('assets/history_dates.json');
+      final Map<String, dynamic> jsonData = jsonDecode(jsonString);
+      final List<dynamic> categories = jsonData['categories'];
 
-    final defaultEvents = [
-      // Term 1
-      Event(
-        id: 1,
-        title: 'اندلاع الحرب العالمية الأولى',
-        date: '28-07-1914',
-        description: 'بداية الحرب العالمية الأولى بعد اغتيال الأرشيدوق فرانز فرديناند',
-        listId: 1,
-      ),
-      Event(
-        id: 2,
-        title: 'تأسيس عصبة الأمم',
-        date: '10-01-1920',
-        description: 'تأسيس منظمة عصبة الأمم لضمان السلام العالمي',
-        listId: 1,
-      ),
-      Event(
-        id: 3,
-        title: 'انتهاء الحرب العالمية الثانية',
-        date: '02-09-1945',
-        description: 'انتهاء الحرب العالمية الثانية بتوقيع اليابان على الاستسلام',
-        listId: 1,
-      ),
-      // Term 2
-      Event(
-        id: 4,
-        title: 'ثورة أكتوبر الروسية',
-        date: '07-11-1917',
-        description: 'الثورة البلشفية في روسيا',
-        listId: 2,
-      ),
-      Event(
-        id: 5,
-        title: 'معاهدة فرساي',
-        date: '28-06-1919',
-        description: 'معاهدة السلام التي أنهت الحرب العالمية الأولى',
-        listId: 2,
-      ),
-      Event(
-        id: 6,
-        title: 'أزمة الكساد الكبير',
-        date: '29-10-1929',
-        description: 'انهيار سوق الأسهم الأمريكي',
-        listId: 2,
-      ),
-      Event(
-        id: 7,
-        title: 'صعود هتلر للسلطة',
-        date: '30-01-1933',
-        description: 'تعيين أدولف هتلر مستشاراً لألمانيا',
-        listId: 2,
-      ),
-      Event(
-        id: 8,
-        title: 'غزو بولندا',
-        date: '01-09-1939',
-        description: 'بداية الحرب العالمية الثانية',
-        listId: 2,
-      ),
-      // Term 3
-      Event(
-        id: 9,
-        title: 'مبدأ ترومان (الحرب الباردة)',
-        date: '12-03-1947',
-        description: 'بداية سياسة الاحتواء والحرب الباردة بين الولايات المتحدة والاتحاد السوفيتي',
-        listId: 3,
-      ),
-      Event(
-        id: 10,
-        title: 'تأسيس الأمم المتحدة',
-        date: '24-10-1945',
-        description: 'تأسيس منظمة الأمم المتحدة',
-        listId: 3,
-      ),
-      Event(
-        id: 11,
-        title: 'أزمة الصواريخ الكوبية',
-        date: '14-10-1962',
-        description: 'مواجهة حادة بين الولايات المتحدة والاتحاد السوفيتي حول كوبا',
-        listId: 3,
-      ),
-      Event(
-        id: 12,
-        title: 'سقوط جدار برلين',
-        date: '09-11-1989',
-        description: 'انهيار جدار برلين وبداية توحيد ألمانيا',
-        listId: 3,
-      ),
-      Event(
-        id: 13,
-        title: 'انهيار الاتحاد السوفيتي',
-        date: '26-12-1991',
-        description: 'نهاية الاتحاد السوفيتي وتفككه',
-        listId: 3,
-      ),
-    ];
+      final List<EventList> defaultLists = [];
+      final List<Event> defaultEvents = [];
+      int eventIdCounter = 1;
 
-    await _saveLists(defaultLists);
-    await _saveEvents(defaultEvents);
-    await prefs.setInt(_nextIdKey, 14);
-    _nextId = 14;
+      for (var category in categories) {
+        final int unitId = category['unit'];
+        final String unitName = category['unit_name'];
+        final List<dynamic> eventsList = category['events'];
+
+        defaultLists.add(
+          EventList(
+            id: unitId,
+            name: unitName,
+            description: 'أحداث $unitName',
+            isEnabled: unitId == 1, // Only first unit is enabled by default
+            isPredefined: true,
+          ),
+        );
+
+        for (var eventMap in eventsList) {
+          defaultEvents.add(
+            Event(
+              id: eventIdCounter++,
+              title: eventMap['event'],
+              date: eventMap['date'],
+              description: eventMap['date_ar'] ?? '',
+              listId: unitId,
+            ),
+          );
+        }
+      }
+
+      await _saveLists(defaultLists);
+      await _saveEvents(defaultEvents);
+      await prefs.setInt(_nextIdKey, eventIdCounter);
+      _nextId = eventIdCounter;
+    } catch (e) {
+      print("Error loading default JSON data: $e");
+    }
   }
 
   static Future<void> _saveLists(List<EventList> lists) async {

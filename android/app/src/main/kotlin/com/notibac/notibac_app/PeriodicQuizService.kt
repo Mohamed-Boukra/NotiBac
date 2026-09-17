@@ -138,8 +138,8 @@ class PeriodicQuizService : Service() {
 
     private fun pickEvent(prefs: android.content.SharedPreferences): Pair<String, String> {
         return try {
-            val listsJson  = prefs.getString("flutter.event_lists", "[]") ?: "[]"
-            val eventsJson = prefs.getString("flutter.events",      "[]") ?: "[]"
+            val listsJson  = prefs.getString("flutter.event_lists_v2", "[]") ?: "[]"
+            val eventsJson = prefs.getString("flutter.events_v2",      "[]") ?: "[]"
 
             // Collect enabled list IDs
             val listsArr   = JSONArray(listsJson)
