@@ -62,7 +62,7 @@ class QuizSchedulerService : Service() {
         // ⬇ After the delay: remove notification, show overlay
         handler.postDelayed({
             stopForeground(STOP_FOREGROUND_REMOVE)
-            showDate()
+            showQuiz()
         }, delay * 1000L)
 
         return START_NOT_STICKY
@@ -78,22 +78,33 @@ class QuizSchedulerService : Service() {
 
     // ── Overlay display ───────────────────────────────────────────────────────
 
-    /** Step 1 — show the date card */
-    private fun showDate() {
+    /** Show the quiz card (randomly date or event first) */
+    private fun showQuiz() {
         dismiss()
         val params = makeParams()
-        val card = dateCard()
-        card.setOnClickListener { showEvent(params) }   // tap → flip
-        attach(card, params)
-    }
 
-    /** Step 2 — replace date card with event card */
-    private fun showEvent(params: WindowManager.LayoutParams) {
-        val old = currentView ?: return
-        detach(old)
-        val card = eventCard()
-        card.setOnClickListener { close() }             // tap → close
-        attach(card, params)
+        val showDateFirst = Math.random() < 0.5
+        val firstText = if (showDateFirst) quizDate else quizTitle
+        val secondText = if (showDateFirst) quizTitle else quizDate
+        
+        val firstBg = if (showDateFirst) Color.parseColor("#E8EAF6") else Color.parseColor("#E0F2F1")
+        val firstTextCol = if (showDateFirst) Color.parseColor("#1A237E") else Color.parseColor("#004D40")
+        
+        val secondBg = if (showDateFirst) Color.parseColor("#E0F2F1") else Color.parseColor("#E8EAF6")
+        val secondTextCol = if (showDateFirst) Color.parseColor("#004D40") else Color.parseColor("#1A237E")
+
+        val frontCard = card(Color.WHITE, firstBg) {
+            big(firstText, firstTextCol)
+            setOnClickListener {
+                dismiss()
+                val backCard = card(Color.WHITE, secondBg) {
+                    big(secondText, secondTextCol)
+                    setOnClickListener { close() }
+                }
+                attach(backCard, params)
+            }
+        }
+        attach(frontCard, params)
     }
 
     /** Dismiss and stop the service */
@@ -119,18 +130,6 @@ class QuizSchedulerService : Service() {
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             y = resources.displayMetrics.heightPixels / 4
         }
-    }
-
-    private fun dateCard(): LinearLayout = card(
-        Color.WHITE, Color.parseColor("#E8EAF6")
-    ) {
-        big(quizDate, Color.parseColor("#1A237E"))
-    }
-
-    private fun eventCard(): LinearLayout = card(
-        Color.WHITE, Color.parseColor("#E0F2F1")
-    ) {
-        big(quizTitle, Color.parseColor("#004D40"))
     }
 
     // ── DSL-style helpers ─────────────────────────────────────────────────────

@@ -183,8 +183,29 @@ class PeriodicQuizService : Service() {
         val (date, title) = pickEvent(prefs)
         dismiss()
         val params = makeParams()
-        val card = dateCard(date, title, params)
-        attach(card, params)
+
+        val showDateFirst = Math.random() < 0.5
+        val firstText = if (showDateFirst) date else title
+        val secondText = if (showDateFirst) title else date
+        
+        val firstBg = if (showDateFirst) Color.parseColor("#E8EAF6") else Color.parseColor("#E0F2F1")
+        val firstTextCol = if (showDateFirst) Color.parseColor("#1A237E") else Color.parseColor("#004D40")
+        
+        val secondBg = if (showDateFirst) Color.parseColor("#E0F2F1") else Color.parseColor("#E8EAF6")
+        val secondTextCol = if (showDateFirst) Color.parseColor("#004D40") else Color.parseColor("#1A237E")
+
+        val frontCard = card(Color.WHITE, firstBg) {
+            big(firstText, firstTextCol)
+            setOnClickListener {
+                dismiss()
+                val backCard = card(Color.WHITE, secondBg) {
+                    big(secondText, secondTextCol)
+                    setOnClickListener { dismiss() }
+                }
+                attach(backCard, params)
+            }
+        }
+        attach(frontCard, params)
     }
 
     private fun makeParams(): WindowManager.LayoutParams {
@@ -203,22 +224,6 @@ class PeriodicQuizService : Service() {
             y = resources.displayMetrics.heightPixels / 4
         }
     }
-
-    private fun dateCard(date: String, title: String, params: WindowManager.LayoutParams): LinearLayout =
-        card(Color.WHITE, Color.parseColor("#E8EAF6")) {
-            big(date, Color.parseColor("#1A237E"))
-            setOnClickListener {
-                dismiss()
-                val ev = eventCard(title)
-                ev.setOnClickListener { dismiss() }
-                attach(ev, params)
-            }
-        }
-
-    private fun eventCard(title: String): LinearLayout =
-        card(Color.WHITE, Color.parseColor("#E0F2F1")) {
-            big(title, Color.parseColor("#004D40"))
-        }
 
     // ── DSL helpers ──────────────────────────────────────────────────────────
 
