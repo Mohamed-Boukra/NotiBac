@@ -132,6 +132,33 @@ class HomePage extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 60),
+                      
+                      // Developer Credit
+                      Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.code_rounded, size: 18, color: Colors.indigo),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Developed by ',
+                              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                            ),
+                            const Text(
+                              'Mohamed Boukra',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.indigo,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

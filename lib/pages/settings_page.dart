@@ -334,6 +334,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 40),
 
             // ── Test Button ──
+            /* 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 18),
@@ -358,6 +359,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ),
             ),
+            */
             const SizedBox(height: 30),
           ],
         ),
