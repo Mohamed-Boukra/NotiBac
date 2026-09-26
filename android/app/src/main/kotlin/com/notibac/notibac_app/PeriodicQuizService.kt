@@ -184,9 +184,13 @@ class PeriodicQuizService : Service() {
         dismiss()
         val params = makeParams(prefs)
 
+        val scaleBits = prefs.getLong("flutter.pop_scale" , java.lang.Double.doubleToLongBits(1.0))
+        val scale = java.lang.Double.longBitsToDouble(scaleBits).toFloat()
+
         val showDateFirst = Math.random() < 0.5
         val firstText = if (showDateFirst) date else title
         val secondText = if (showDateFirst) title else date
+        
         
         val firstBg = if (showDateFirst) Color.parseColor("#E8EAF6") else Color.parseColor("#E0F2F1")
         val firstTextCol = if (showDateFirst) Color.parseColor("#1A237E") else Color.parseColor("#004D40")
@@ -194,12 +198,12 @@ class PeriodicQuizService : Service() {
         val secondBg = if (showDateFirst) Color.parseColor("#E0F2F1") else Color.parseColor("#E8EAF6")
         val secondTextCol = if (showDateFirst) Color.parseColor("#004D40") else Color.parseColor("#1A237E")
 
-        val frontCard = card(Color.WHITE, firstBg) {
-            big(firstText, firstTextCol)
+        val frontCard = card(Color.WHITE, firstBg, scale) {
+            big(firstText, firstTextCol, scale)
             setOnClickListener {
                 dismiss()
-                val backCard = card(Color.WHITE, secondBg) {
-                    big(secondText, secondTextCol)
+                val backCard = card(Color.WHITE, secondBg, scale) {
+                    big(secondText, secondTextCol, scale)
                     setOnClickListener { dismiss() }
                 }
                 attach(backCard, params)
@@ -244,35 +248,35 @@ class PeriodicQuizService : Service() {
 
     private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
-    private fun card(fill: Int, stroke: Int, build: LinearLayout.() -> Unit): LinearLayout =
+    private fun card(fill: Int, stroke: Int, scale : Float, build: LinearLayout.() -> Unit): LinearLayout =
         LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(24), dp(14), dp(24), dp(14))
+            setPadding(dp((24*scale).toInt()), dp((14*scale).toInt()), dp((24*scale).toInt()), dp((14*scale).toInt()))
             elevation = dp(8).toFloat()
             background = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                cornerRadius = dp(50).toFloat()
+                cornerRadius = dp((50*scale).toInt()).toFloat()
                 setColor(fill)
                 setStroke(dp(2), stroke)
             }
             build()
         }
 
-    private fun LinearLayout.label(text: String, color: Int) =
+    private fun LinearLayout.label(text: String, color: Int, scale: Float) =
         addView(TextView(context).apply {
-            this.text = text; textSize = 11f; setTextColor(color)
+            this.text = text; textSize = 11f*scale; setTextColor(color)
             setTypeface(typeface, Typeface.BOLD); gravity = Gravity.CENTER
         })
 
-    private fun LinearLayout.big(text: String, color: Int) =
+    private fun LinearLayout.big(text: String, color: Int, scale: Float) =
         addView(TextView(context).apply {
-            this.text = text; textSize = 18f; setTextColor(color)
+            this.text = text; textSize = 18f*scale; setTextColor(color)
             setTypeface(typeface, Typeface.BOLD); gravity = Gravity.CENTER
         })
 
-    private fun LinearLayout.hint(text: String, color: Int) =
+    private fun LinearLayout.hint(text: String, color: Int, scale: Float) =
         addView(TextView(context).apply {
-            this.text = text; textSize = 12f; setTextColor(color); gravity = Gravity.CENTER
+            this.text = text; textSize = 12f*scale; setTextColor(color); gravity = Gravity.CENTER
         })
 
     // ── WindowManager helpers ────────────────────────────────────────────────

@@ -29,6 +29,10 @@ class _SettingsPageState extends State<SettingsPage> {
   int _secs = 30;
   Timer? _timer;
 
+  double _popScale = 1.0;
+  OverlayEntry? _overlayEntry;
+   
+
   @override
   void initState() {
     super.initState();
@@ -47,6 +51,9 @@ class _SettingsPageState extends State<SettingsPage> {
       final dEnd = prefs.getInt('dnd_end') ?? 7;
       _dndStart = TimeOfDay(hour: dStart, minute: 0);
       _dndEnd = TimeOfDay(hour: dEnd, minute: 0);
+
+      _popScale = prefs.getDouble('pop_scale') ?? 1.0;
+
     });
   }
 
@@ -60,6 +67,46 @@ class _SettingsPageState extends State<SettingsPage> {
       await _ch.invokeMethod('restartPeriodic');
     }
   }
+
+  void _showScalePreview() {
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        return Align(
+          alignment: _popupPosition == "left" ? Alignment.topLeft : (_popupPosition == "right" ? Alignment.topRight : Alignment.topCenter),
+          child: Container(
+            margin: EdgeInsets.only(top: 150 , right: 16 , left:  16),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 24*_popScale , vertical: 14*_popScale),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8EAF6),
+                  borderRadius: BorderRadius.circular(50*_popScale),
+                  border: Border.all(color: Colors.white , width: 2),
+                  boxShadow: const  [BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8 , offset: Offset(0, 4)
+                  )]
+                ),
+                child:  Text(
+                  "1954-11-01",
+                  style: TextStyle(
+                    color: const Color(0xFF1A237E),
+                    fontSize: 18*_popScale,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          )
+        );
+      }
+    );
+    Overlay.of(context).insert(_overlayEntry!);
+
+  }
+
 
   Future<void> _togglePeriodic(bool enabled) async {
     final bool granted = await _ch.invokeMethod('checkPermission') ?? false;
@@ -270,6 +317,47 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ),
 
+            const SizedBox(height: 24),
+
+            
+
+            // ── Card size  ──
+
+            _buildSectionTitle('حجم النافذة', Icons.format_size_rounded),
+            _buildSectionCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: Colors.indigo,
+                      inactiveTrackColor: Colors.indigo.withValues(alpha: 0.2),
+                      thumbColor: Colors.indigo,
+                      overlayColor: Colors.indigo.withValues(alpha: 0.1),
+                      trackHeight: 6,
+                    ),
+                    child: Slider(
+                      value: _popScale,
+                      min: 0.7,
+                      max: 2.0,
+                      onChanged: (value){
+                        setState(() {
+                          _popScale = value;
+                        });
+                        _showScalePreview();
+                      },
+                      onChangeEnd : (value) {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                        _saveSetting('pop_scale' , value);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
             const SizedBox(height: 24),
 
             // ── Do Not Disturb ──
