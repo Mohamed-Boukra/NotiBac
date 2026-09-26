@@ -6,11 +6,7 @@ class EventsPage extends StatefulWidget {
   final String listTitle;
   final int listId;
 
-  const EventsPage({
-    super.key,
-    required this.listTitle,
-    required this.listId,
-  });
+  const EventsPage({super.key, required this.listTitle, required this.listId});
 
   @override
   State<EventsPage> createState() => _EventsPageState();
@@ -22,6 +18,8 @@ class _EventsPageState extends State<EventsPage> {
   List<Event> _filteredEvents = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isSelecting = false;
+  Set<int> _selectedIds = {};
 
   @override
   void initState() {
@@ -74,8 +72,16 @@ class _EventsPageState extends State<EventsPage> {
         return Directionality(
           textDirection: TextDirection.rtl,
           child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('إضافة حدث جديد', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: const Text(
+              'إضافة حدث جديد',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+              ),
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -86,8 +92,16 @@ class _EventsPageState extends State<EventsPage> {
                     decoration: InputDecoration(
                       labelText: 'عنوان الحدث *',
                       hintText: 'مثال: اندلاع الثورة التحريرية',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Colors.indigo,
+                          width: 2,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -97,8 +111,16 @@ class _EventsPageState extends State<EventsPage> {
                     decoration: InputDecoration(
                       labelText: 'التاريخ (DD-MM-YYYY) *',
                       hintText: 'مثال: 01-11-1954',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Colors.indigo,
+                          width: 2,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -108,8 +130,16 @@ class _EventsPageState extends State<EventsPage> {
                     maxLines: 3,
                     decoration: InputDecoration(
                       labelText: 'التفاصيل / الوصف (اختياري)',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.indigo, width: 2)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Colors.indigo,
+                          width: 2,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -118,24 +148,39 @@ class _EventsPageState extends State<EventsPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('إلغاء', style: TextStyle(color: Colors.blueGrey)),
+                child: const Text(
+                  'إلغاء',
+                  style: TextStyle(color: Colors.blueGrey),
+                ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.indigo,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 onPressed: () {
-                  if (titleController.text.trim().isNotEmpty && dateController.text.trim().isNotEmpty) {
+                  if (titleController.text.trim().isNotEmpty &&
+                      dateController.text.trim().isNotEmpty) {
                     Navigator.of(dialogContext).pop(true);
                   } else {
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
-                      const SnackBar(content: Text('يرجى كتابة عنوان الحدث والتاريخ', textAlign: TextAlign.right), backgroundColor: Colors.redAccent),
+                      const SnackBar(
+                        content: Text(
+                          'يرجى كتابة عنوان الحدث والتاريخ',
+                          textAlign: TextAlign.right,
+                        ),
+                        backgroundColor: Colors.redAccent,
+                      ),
                     );
                   }
                 },
-                child: const Text('إضافة', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'إضافة',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -155,7 +200,10 @@ class _EventsPageState extends State<EventsPage> {
       await _loadEvents();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تمت إضافة الحدث بنجاح', textAlign: TextAlign.right), backgroundColor: Colors.teal),
+          const SnackBar(
+            content: Text('تمت إضافة الحدث بنجاح', textAlign: TextAlign.right),
+            backgroundColor: Colors.teal,
+          ),
         );
       }
     }
@@ -168,22 +216,35 @@ class _EventsPageState extends State<EventsPage> {
       builder: (context) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('حذف الحدث', style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'حذف الحدث',
+            style: TextStyle(color: Colors.indigo, fontWeight: FontWeight.bold),
+          ),
           content: Text('هل أنت متأكد من حذف الحدث "${event.title}"؟'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('إلغاء', style: TextStyle(color: Colors.blueGrey)),
+              child: const Text(
+                'إلغاء',
+                style: TextStyle(color: Colors.blueGrey),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('حذف', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'حذف',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -195,7 +256,58 @@ class _EventsPageState extends State<EventsPage> {
       await _loadEvents();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('تم حذف الحدث: ${event.title}', textAlign: TextAlign.right), backgroundColor: Colors.teal),
+          SnackBar(
+            content: Text(
+              'تم حذف الحدث: ${event.title}',
+              textAlign: TextAlign.right,
+            ),
+            backgroundColor: Colors.teal,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportToFocusList() async {
+    try {
+      final focusList = await DatabaseService.getListById(0);
+      for (int selectedId in _selectedIds) {
+        final originalEvent = _allEvents.firstWhere(
+          (event) => event.id == selectedId,
+        );
+
+        final copyEvent = Event(
+          title: originalEvent.title,
+          date: originalEvent.date,
+          description: originalEvent.description,
+          listId: 0,
+          isCustom: true,
+        );
+        await DatabaseService.insertEvent(copyEvent);
+      }
+      setState(() {
+        _isSelecting = false;
+        _selectedIds.clear();
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم تصدير الأحداث بنجاح', textAlign: TextAlign.right),
+            backgroundColor: Colors.teal,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'حدث خطأ أثناء التصدير: $e',
+              textAlign: TextAlign.right,
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     }
@@ -212,7 +324,21 @@ class _EventsPageState extends State<EventsPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        title: Text(widget.listTitle, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+        leading: _isSelecting
+            ? IconButton(
+                icon: const Icon(Icons.close_rounded),
+                onPressed: () {
+                  setState(() {
+                    _isSelecting = false;
+                    _selectedIds.clear();
+                  });
+                },
+              )
+            : null,
+        title: Text(
+          widget.listTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
         centerTitle: true,
@@ -232,9 +358,15 @@ class _EventsPageState extends State<EventsPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.indigo.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: Colors.indigo.withValues(alpha: 0.1),
+                    ),
                     boxShadow: [
-                      BoxShadow(color: Colors.indigo.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                      BoxShadow(
+                        color: Colors.indigo.withValues(alpha: 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
                   child: TextField(
@@ -242,14 +374,20 @@ class _EventsPageState extends State<EventsPage> {
                     textAlign: TextAlign.right,
                     onChanged: _filterEvents,
                     decoration: InputDecoration(
-                      icon: const Icon(Icons.search_rounded, color: Colors.indigo),
+                      icon: const Icon(
+                        Icons.search_rounded,
+                        color: Colors.indigo,
+                      ),
                       hintText: 'ابحث عن حدث أو تاريخ...',
-                      hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 14,
+                      ),
                       border: InputBorder.none,
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
 
                 // Add Event Button Row
@@ -258,7 +396,11 @@ class _EventsPageState extends State<EventsPage> {
                   children: [
                     Text(
                       'الأحداث (${_filteredEvents.length})',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.indigo),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
                     ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
@@ -266,12 +408,23 @@ class _EventsPageState extends State<EventsPage> {
                         foregroundColor: Colors.white,
                         elevation: 3,
                         shadowColor: Colors.indigo.withValues(alpha: 0.3),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                       onPressed: _addEventDialog,
                       icon: const Icon(Icons.add_rounded, size: 20),
-                      label: const Text('إضافة حدث', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      label: const Text(
+                        'إضافة حدث',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -281,101 +434,217 @@ class _EventsPageState extends State<EventsPage> {
                 // Events List Area
                 Expanded(
                   child: _isLoading
-                      ? const Center(child: CircularProgressIndicator(color: Colors.indigo))
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.indigo,
+                          ),
+                        )
                       : _errorMessage != null
-                          ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.redAccent)))
-                          : _filteredEvents.isEmpty
-                              ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.event_note_rounded, size: 64, color: Colors.blueGrey.withValues(alpha: 0.3)),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        _searchController.text.isNotEmpty ? 'لا توجد أحداث تطابق بحثك' : 'لا توجد أحداث في هذه القائمة',
-                                        style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade400, fontWeight: FontWeight.w600),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: _filteredEvents.length,
-                                  itemBuilder: (context, index) {
-                                    return _buildEventCard(_filteredEvents[index]);
-                                  },
+                      ? Center(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Colors.redAccent),
+                          ),
+                        )
+                      : _filteredEvents.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.event_note_rounded,
+                                size: 64,
+                                color: Colors.blueGrey.withValues(alpha: 0.3),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _searchController.text.isNotEmpty
+                                    ? 'لا توجد أحداث تطابق بحثك'
+                                    : 'لا توجد أحداث في هذه القائمة',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.blueGrey.shade400,
+                                  fontWeight: FontWeight.w600,
                                 ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _filteredEvents.length,
+                          itemBuilder: (context, index) {
+                            return _buildEventCard(_filteredEvents[index]);
+                          },
+                        ),
                 ),
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: (_isSelecting && _selectedIds.isNotEmpty)
+          ? Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.indigo,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  icon: const Icon(Icons.star_rounded, size: 24),
+                  label: Text(
+                    'تصدير (${_selectedIds.length})',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: _exportToFocusList,
+                ),
+              ),
+            )
+          : const SizedBox.shrink(),
     );
   }
 
   Widget _buildEventCard(Event event) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.indigo.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  event.title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
-                ),
-              ),
-              if (event.isCustom)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
-                  onPressed: () => _deleteEvent(event),
-                  constraints: const BoxConstraints(),
-                  padding: EdgeInsets.zero,
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          
-          // Date badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.amber.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.calendar_today_rounded, size: 14, color: Colors.amber),
-                const SizedBox(width: 8),
-                Text(
-                  event.date,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber.shade800),
-                ),
-              ],
-            ),
-          ),
-          
-          if (event.description.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(
-              event.description,
-              style: TextStyle(fontSize: 14, color: Colors.blueGrey.shade600, height: 1.5),
+    return GestureDetector(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.indigo.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_isSelecting)
+                  Checkbox(
+                    value: _selectedIds.contains(event.id),
+                    onChanged: (value) {
+                      setState(() {
+                        if (_selectedIds.contains(event.id)) {
+                          _selectedIds.remove(event.id);
+                          if (_selectedIds.isEmpty) {
+                            _isSelecting == false;
+                          }
+                        } else {
+                          _selectedIds.add(event.id!);
+                        }
+                      });
+                    },
+                  ),
+
+                Expanded(
+                  child: Text(
+                    event.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigo,
+                    ),
+                  ),
+                ),
+                if (event.isCustom)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      color: Colors.redAccent,
+                      size: 22,
+                    ),
+                    onPressed: () => _deleteEvent(event),
+                    constraints: const BoxConstraints(),
+                    padding: EdgeInsets.zero,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Date badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 14,
+                    color: Colors.amber,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    event.date,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber.shade800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            if (event.description.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                event.description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.blueGrey.shade600,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
+      onLongPress: () {
+        setState(() {
+          _isSelecting = true;
+          _selectedIds.add(event.id!);
+        });
+      },
+      onTap: () {
+        if (_isSelecting) {
+          setState(() {
+            if (_selectedIds.contains(event.id)) {
+              _selectedIds.remove(event.id);
+              if (_selectedIds.isEmpty) {
+                _isSelecting = false;
+              }
+            } else {
+              _selectedIds.add(event.id!);
+            }
+          });
+        }
+      },
     );
   }
 }

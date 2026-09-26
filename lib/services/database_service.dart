@@ -67,6 +67,16 @@ class DatabaseService {
           );
         }
       }
+      defaultLists.add(
+        EventList(
+          id: 0,
+          name: "قائمة التركيز",
+          description: "من أجل التركيز على أحداث معينة",
+          isEnabled: false,
+          isPredefined: true,
+          isFocusList: true
+        ),
+      );
 
       await _saveLists(defaultLists);
       await _saveEvents(defaultEvents);

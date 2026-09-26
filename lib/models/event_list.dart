@@ -4,6 +4,7 @@ class EventList {
   final String description;
   final bool isEnabled;
   final bool isPredefined;
+  final bool isFocusList;
 
   EventList({
     this.id,
@@ -11,6 +12,7 @@ class EventList {
     required this.description,
     this.isEnabled = true,
     this.isPredefined = false,
+    this.isFocusList = false,
   });
 
   Map<String, dynamic> toJson() {
