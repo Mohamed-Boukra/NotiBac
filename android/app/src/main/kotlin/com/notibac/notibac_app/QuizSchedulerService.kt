@@ -99,11 +99,11 @@ class QuizSchedulerService : Service() {
 
         val frontCard = card(Color.WHITE, firstBg, scale) {
             big(firstText, firstTextCol, scale)
-            makeDraggable(frontCard, params) {
+            makeDraggable(this, params) {
                 dismiss()
                 val backCard = card(Color.WHITE, secondBg, scale) {
                     big(secondText, secondTextCol, scale)
-                    makeDraggable(backCard, params) { close() }
+                    makeDraggable(this, params) { close() }
                 }
                 attach(backCard, params)
             }

@@ -200,11 +200,11 @@ class PeriodicQuizService : Service() {
 
         val frontCard = card(Color.WHITE, firstBg, scale) {
             big(firstText, firstTextCol, scale)
-            makeDraggable(frontCard , params) {
+            makeDraggable(this , params) {
                 dismiss()
                 val backCard = card(Color.WHITE, secondBg, scale) {
                     big(secondText, secondTextCol, scale)
-                    makeDraggable(backCard, params) { dismiss() }
+                    makeDraggable(this, params) { dismiss() }
                 }
                 attach(backCard, params)
             }
