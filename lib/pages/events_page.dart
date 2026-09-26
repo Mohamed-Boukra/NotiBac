@@ -271,10 +271,16 @@ class _EventsPageState extends State<EventsPage> {
   Future<void> _exportToFocusList() async {
     try {
       final focusList = await DatabaseService.getListById(0);
+      final focusEvents = await DatabaseService.getEventsByListId(0);
+      int addedCount = 0;
       for (int selectedId in _selectedIds) {
         final originalEvent = _allEvents.firstWhere(
           (event) => event.id == selectedId,
         );
+        bool existing = focusEvents.any(
+          (event) => event.title == originalEvent.title,
+        );
+        if (existing) continue;
 
         final copyEvent = Event(
           title: originalEvent.title,
@@ -284,17 +290,31 @@ class _EventsPageState extends State<EventsPage> {
           isCustom: true,
         );
         await DatabaseService.insertEvent(copyEvent);
+        addedCount++;
       }
       setState(() {
         _isSelecting = false;
         _selectedIds.clear();
       });
 
-      if (mounted) {
+      if (addedCount > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم تصدير $addedCount أحداث بنجاح',
+              textAlign: TextAlign.right,
+            ),
+            backgroundColor: Colors.teal,
+          ),
+        );
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تم تصدير الأحداث بنجاح', textAlign: TextAlign.right),
-            backgroundColor: Colors.teal,
+            content: Text(
+              'جميع الأحداث المحددة موجودة مسبقاً في قائمة التركيز',
+              textAlign: TextAlign.right,
+            ),
+            backgroundColor: Colors.orange,
           ),
         );
       }
@@ -549,7 +569,7 @@ class _EventsPageState extends State<EventsPage> {
                         if (_selectedIds.contains(event.id)) {
                           _selectedIds.remove(event.id);
                           if (_selectedIds.isEmpty) {
-                            _isSelecting == false;
+                            _isSelecting = false;
                           }
                         } else {
                           _selectedIds.add(event.id!);
@@ -626,6 +646,7 @@ class _EventsPageState extends State<EventsPage> {
         ),
       ),
       onLongPress: () {
+        if (widget.listId == 0) return;
         setState(() {
           _isSelecting = true;
           _selectedIds.add(event.id!);
