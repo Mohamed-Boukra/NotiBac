@@ -190,7 +190,7 @@ class PeriodicQuizService : Service() {
         val showDateFirst = Math.random() < 0.5
         val firstText = if (showDateFirst) date else title
         val secondText = if (showDateFirst) title else date
-        
+
         
         val firstBg = if (showDateFirst) Color.parseColor("#E8EAF6") else Color.parseColor("#E0F2F1")
         val firstTextCol = if (showDateFirst) Color.parseColor("#1A237E") else Color.parseColor("#004D40")
@@ -200,11 +200,11 @@ class PeriodicQuizService : Service() {
 
         val frontCard = card(Color.WHITE, firstBg, scale) {
             big(firstText, firstTextCol, scale)
-            setOnClickListener {
+            makeDraggable(frontCard , params) {
                 dismiss()
                 val backCard = card(Color.WHITE, secondBg, scale) {
                     big(secondText, secondTextCol, scale)
-                    setOnClickListener { dismiss() }
+                    makeDraggable(backCard, params) { dismiss() }
                 }
                 attach(backCard, params)
             }
@@ -289,5 +289,40 @@ class PeriodicQuizService : Service() {
     private fun dismiss() {
         currentView?.let { try { wm.removeView(it) } catch (_: Exception) {} }
         currentView = null
+    }
+
+    private fun makeDraggable(view: View, params: WindowManager.LayoutParams, onClick: () -> Unit) {
+        var intitialX = 0
+        var intitialY = 0
+        var initialTouchX = 0f
+        var initialTouchY = 0f
+
+        view.setOnTouchListener{
+            _,event -> when(event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    intitialX = params.x 
+                    intitialY = params.y
+                    initialTouchX = event.rawX
+                    initialTouchY = event.rawY
+                    true
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    params.x = intitialX + (event.rawX - initialTouchX).toInt()
+                    params.y = intitialY + (event.rawY - initialTouchY).toInt()
+                    wm.updateViewLayout(view, params)
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP -> {
+                    val movex = Math.abs(event.rawX - initialTouchX)
+                    val movey = Math.abs(event.rawY - initialTouchY)
+                    if(movex< 10 && movey < 10){
+                        onClick()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+
     }
 }

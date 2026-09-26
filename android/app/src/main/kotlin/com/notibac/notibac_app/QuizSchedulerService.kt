@@ -99,11 +99,11 @@ class QuizSchedulerService : Service() {
 
         val frontCard = card(Color.WHITE, firstBg, scale) {
             big(firstText, firstTextCol, scale)
-            setOnClickListener {
+            makeDraggable(frontCard, params) {
                 dismiss()
                 val backCard = card(Color.WHITE, secondBg, scale) {
                     big(secondText, secondTextCol, scale)
-                    setOnClickListener { close() }
+                    makeDraggable(backCard, params) { close() }
                 }
                 attach(backCard, params)
             }
@@ -215,5 +215,41 @@ class QuizSchedulerService : Service() {
     private fun dismiss() {
         currentView?.let { detach(it) }
         currentView = null
+
+    }
+
+    private fun makeDraggable(view: View, params: WindowManager.LayoutParams, onClick: () -> Unit) {
+        var intitialX = 0
+        var intitialY = 0
+        var initialTouchX = 0f
+        var initialTouchY = 0f
+
+        view.setOnTouchListener{
+            _,event -> when(event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    intitialX = params.x 
+                    intitialY = params.y
+                    initialTouchX = event.rawX
+                    initialTouchY = event.rawY
+                    true
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    params.x = intitialX + (event.rawX - initialTouchX).toInt()
+                    params.y = intitialY + (event.rawY - initialTouchY).toInt()
+                    wm.updateViewLayout(view, params)
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP -> {
+                    val movex = Math.abs(event.rawX - initialTouchX)
+                    val movey = Math.abs(event.rawY - initialTouchY)
+                    if(movex< 10 && movey < 10){
+                        onClick()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+
     }
 }
